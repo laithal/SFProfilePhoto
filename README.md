@@ -1,5 +1,5 @@
 #  Implementation considerations for your UserPhotoHandler class and trigger
-# Please Note: I assume absolutely no responsibility for any of the code in this repository. Use at your own risk.
+## Please Note: I assume absolutely no responsibility for any of the code in this repository. Use at your own risk.
 
 1. Batch Handling: The trigger groups user records to process them in batches, reducing the number of queued jobs. It attempts to queue up to 49 users in each batch due to the Queueable governor limits.
 
