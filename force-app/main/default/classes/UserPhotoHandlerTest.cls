@@ -24,22 +24,25 @@ private class UserPhotoHandlerTest {
             LocaleSidKey='en_US', 
             ProfileId = [SELECT Id FROM Profile WHERE Name='Standard User' LIMIT 1].Id, 
             TimeZoneSidKey='America/Los_Angeles', 
-            UserName='standarduser@testorg.com' + DateTime.now().getTime()
+            UserName='standarduser@testorg.com' + DateTime.now().getTime(),
+            SF_User_Profile_Photo__c = 'http://someurl.com/image.jpg'
         );
         
-        insert testUser;
+        insert testUser; // This will initiate the trigger
         
         // Set the mock callout class
         Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
         
         Test.startTest();
-        // Call the method to test
-        UserPhotoHandler.setProfilePhoto(testUser.Id, 'http://someurl.com/image.jpg');
+        
+        // Updating the user will fire the trigger
+        testUser.SF_User_Profile_Photo__c = 'http://someurl.com/newimage.jpg';
+        update testUser;
+        
         Test.stopTest();
         
         // Verify the result
-        // Verify the result
-        List<ContentVersion> cvList = [SELECT Id, ContentDocumentId, VersionData FROM ContentVersion WHERE Title = 'Profile Photo' LIMIT 1];
+        List<ContentVersion> cvList = [SELECT Id, ContentDocumentId, VersionData FROM ContentVersion WHERE Title = 'Profile Photo' ORDER BY CreatedDate DESC LIMIT 1];
         System.assert(!cvList.isEmpty(), 'ContentVersion record not created');
         System.assertEquals('FakeImageBlob'.length(), cvList[0].VersionData.size());
     }
