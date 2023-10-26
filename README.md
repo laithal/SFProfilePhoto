@@ -5,13 +5,13 @@
 
 3. HTTP Callout Failures: The current design might fail if the provided photo URL is not accessible or returns an error. Consider adding more robust error handling or notifications for such cases.
 
-3. Content Version Storage: The solution saves each photo as a new ContentVersion. Over time, this could result in a lot of stored photos if users frequently update their profile photos. Regularly cleaning up old photos or reusing content versions could help manage storage.
+3. Content Version Storage: Previously, the previsolution was saving each photo as a new ContentVersion. This has been replaced to directly uploading a photo using the UserProfiles.setPhoto(communityId, userId, fileUpload) menthod
 
 4. Trigger Logic: The trigger currently fires after insert and update on the User object. As your org grows and other processes get built around the User object, consider refactoring to ensure the trigger remains efficient and does not conflict with other operations.
 
 5. Concurrent Execution: If multiple operations (such as bulk updates) are done in quick succession, there's a potential risk of hitting Salesforce's concurrent long-running transaction limit.
 
-6. Testing with Real Image Data: The test class uses a mock response with a string representation of an image. For more accurate testing, consider using a real image Blob or mimicking a more realistic response body.
+6. Test Image Data: The test class uses a mock service returning an image independent of a real URL. The image data is stored as Bas64-encoded string in the static variable IMAGE_BASE64.
 
 7. Profile Photo Overwrite: If a user updates the SF_User_Profile_Photo__c field with the same URL, the photo will be downloaded and set again. Depending on the intended behavior, you might consider adding logic to avoid unnecessary overwrites.
 

@@ -31,19 +31,28 @@ private class UserPhotoHandlerTest {
             LanguageLocaleKey='en_US', 
             LocaleSidKey='en_US', 
             ProfileId = [SELECT Id FROM Profile WHERE Name='Standard User' LIMIT 1].Id, 
-            TimeZoneSidKey='America/Los_Angeles', 
-            UserName='standarduser@testorg.com' + DateTime.now().getTime(),
-            SF_User_Profile_Photo__c = 'http://someurl.com/image.jpg'
-        );
+            TimeZoneSidKey='America/Los_Angeles',
+            UserName='standarduser@testorg.com' + DateTime.now().getTime()
+        );        
+        insert testUser;
         
-        insert testUser; // This will initiate the trigger
+        //Get the user profile without profile photo
+        ConnectApi.Photo usrPhoto = ConnectApi.UserProfiles.getPhoto(null, testUser.Id);
+        
+        //Check for the default path for images (as no image has been set yet)
+        String smallPhoto = usrPhoto.smallPhotoUrl.substring(usrPhoto.smallPhotoUrl.indexOf(SEARCH_STRING) + SEARCH_STRING.length());
+        System.assertEquals(SMALL_PHOTO_URL, smallPhoto);
+        String mediumPhoto = usrPhoto.mediumPhotoUrl.substring(usrPhoto.mediumPhotoUrl.indexOf(SEARCH_STRING) + SEARCH_STRING.length());
+        System.assertEquals(MEDIUM_PHOTO_URL, mediumPhoto);
+        String largePhoto = usrPhoto.largePhotoUrl.substring(usrPhoto.largePhotoUrl.indexOf(SEARCH_STRING) + SEARCH_STRING.length());
+        System.assertEquals(LARGE_PHOTO_URL, largePhoto);
         
         // Set the mock callout class
         Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());                
         
         Test.startTest();        
         // Updating the user will fire the trigger
-        testUser.SF_ProfilePhotoUrl__c = 'http://someurl.com/newimage.jpg';
+        testUser.SF_User_Profile_Photo__c = 'http://someurl.com/newimage.jpg';
         update testUser;        
         Test.stopTest();
 
