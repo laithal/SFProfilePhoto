@@ -6,6 +6,7 @@ trigger UserPhotoTrigger on User (after insert, after update) {
             && u.SF_User_Profile_Photo__c != null) {
             Map<String, String> userDetails = new Map<String, String>{
                 'UserId' => u.Id,
+                'Username' => u.Username,
                 'PhotoURL' => u.SF_User_Profile_Photo__c
             };
             userBatch.add(userDetails);

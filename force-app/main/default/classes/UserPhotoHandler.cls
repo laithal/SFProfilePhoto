@@ -10,6 +10,7 @@ public class UserPhotoHandler implements Queueable, Database.AllowsCallouts {
         for(Map<String, String> userDetails : userBatch) {
             Id userId = userDetails.get('UserId');
             String photoURL = userDetails.get('PhotoURL');
+            String userName = userDetails.get('Username');
             
             // Fetch the content from the URL
             Http http = new Http();
@@ -20,25 +21,14 @@ public class UserPhotoHandler implements Queueable, Database.AllowsCallouts {
             
             if (res.getStatusCode() == 200) {
                 Blob photoBlob = res.getBodyAsBlob();
-
-                // Insert the image as a ContentVersion
-                ContentVersion cv = new ContentVersion();
-                cv.VersionData = photoBlob;
-                cv.Title = 'Profile Photo';
-                cv.PathOnClient = 'ProfilePhoto.jpg';
-                insert cv;
-
-                // Query for the associated ContentDocumentId
-                Id contentDocumentId = [SELECT ContentDocumentId FROM ContentVersion WHERE Id = :cv.Id LIMIT 1].ContentDocumentId;
-
-                // Use ConnectApi to update the profile photo
+                ConnectApi.BinaryInput photoInput = new ConnectApi.BinaryInput(photoBlob, 'image/jpg', userName + '_Profile.jpg');
                 try {
-                    ConnectApi.UserProfiles.setPhoto(null, userId, contentDocumentId, null);
+                    ConnectApi.UserProfiles.setPhoto(null, userId, photoInput);
                 } catch (Exception e) {
                     System.debug('Error setting profile photo: ' + e.getMessage());
                 }
             } else {
-                System.debug('Error fetching photo: ' + res.getStatusCode() + ' ' + res.getStatus());
+                System.debug('Error retrieving photo: ' + res.getStatusCode() + ' ' + res.getStatus());
             }
         }
     }
